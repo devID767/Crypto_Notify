@@ -1,9 +1,9 @@
 {
-  "BTC/UAH": true,
+  "BTC/UAH": false,
   "ETH/UAH": false,
   "USDT/UAH": false,
   "USDC/UAH": false,
-  "XRP/UAH": true,
+  "XRP/UAH": false,
   "LTC/UAH": false,
   "BCH/UAH": false,
   "XLM/UAH": false,

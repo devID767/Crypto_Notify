@@ -92,6 +92,9 @@ def OwnCurrencies(currency, user_id):
     OwnCurrenciesKeyboard = types.InlineKeyboardMarkup()
 
     Currency = Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0]
+    #try:
+    #except:
+    #    Currency = '///'
 
     if currency == 'USD' or Currency == 'USD':
         Currency_USD = types.InlineKeyboardButton('USD ✅', callback_data='USD')

@@ -67,6 +67,10 @@ async def Commands(callback_query: types.CallbackQuery):
     else:
         await bot.send_message(callback_query.from_user.id, 'Проверь, всё ли ты настроил!')
 
+#@dp.message_handler(commands=['start'])
+#async def send_welcome(message):
+#    Data.InsertToBase(message.from_user.id, 'USD')
+
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message):

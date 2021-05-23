@@ -1,0 +1,16 @@
+{
+  "BTC/USD": true,
+  "USDT/USD": false,
+  "BTC/USDT": false,
+  "ETH/USDT": false,
+  "XRP/USDT": false,
+  "LTC/USDT": false,
+  "BCH/USDT": false,
+  "XLM/USDT": false,
+  "DASH/USDT": false,
+  "KUN/USDT": false,
+  "TON/USDT": false,
+  "TRX/USDT": false,
+  "BTC/USDC": false,
+  "USDT/USDC": false
+}
