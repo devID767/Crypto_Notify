@@ -3,13 +3,14 @@ from bs4 import BeautifulSoup
 
 import asyncio
 
-
-url = 'https://kuna.io/markets/xrpuah'
-response = requests.get(url)
-soup = BeautifulSoup(response.text, 'lxml')
+def connectToSite():
+    url = 'https://kuna.io/markets/xrpuah'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'lxml')
+    return soup
 
 def GetCurrencies(OwnCurrency):
-
+    soup = connectToSite()
     CurrenciesList = []
     if OwnCurrency == 'USD':
         Currencies = soup.find_all('li', class_=f'market quote-{OwnCurrency.lower()}')
@@ -50,7 +51,7 @@ def GetAllCurrencies(OwnCurrency):
 
 class Sending:
     price = 0
-    oldprice = 0
+    oldprice = 1
     def __init__(self, bot, user_id, crypto, sign, value, time, ownCurrency):
         self._bot = bot
         self.user_id = user_id
@@ -67,7 +68,7 @@ class Sending:
         self._task = None
 
         self.text = f'{self.crypto} {self._sign} {self._value}'
-        self.text_id = f'{user_id}:{self.crypto} {self._sign} {self._value}'
+        self.text_id = f'{user_id}: {self.crypto} {self._sign} {self._value}'
     async def Start(self):
         if not self.is_started:
             self.is_started = True
@@ -83,11 +84,6 @@ class Sending:
         while True:
             CurrenciesDict = GetAllCurrencies(self.ownCurrency)
             self.price = CurrenciesDict[self.crypto]
-
-            if self.price - (self.price * self._value)/self.oldprice >= self.oldprice:
-                await self._bot.send_message(self.user_id, f'{self.crypto} поднялась на {self._value}%')
-            elif self.price + (self.price * self._value)/self.oldprice <= self.oldprice:
-                await self._bot.send_message(self.user_id, f'{self.crypto} упала на {self._value}%')
 
             if self._sign == 'больше' and self.price >= self._value:
                 await self._bot.send_message(self.user_id, self.text)
