@@ -3,9 +3,9 @@ import Data
 import Crypto
 
 #Back to ...
-BackToMenu = types.InlineKeyboardButton('Вернуться в меню', callback_data='menu')
-BackToSettings = types.InlineKeyboardButton('Вернуться в настройки', callback_data='settings')
-BackToAlert = types.InlineKeyboardButton('Вернуться в уведомления', callback_data='alert')
+BackToMenu = types.InlineKeyboardButton('Перейти в меню', callback_data='menu')
+BackToSettings = types.InlineKeyboardButton('Перейти в настройки', callback_data='settings')
+BackToAlert = types.InlineKeyboardButton('Перейти в уведомления', callback_data='alert')
 
 #MainMenu
 MainMenu = types.InlineKeyboardMarkup()
@@ -15,6 +15,8 @@ Alert = types.InlineKeyboardButton('Уведомления', callback_data='aler
 MainMenu.add(Alert)
 Settings = types.InlineKeyboardButton('Настройки', callback_data='settings')
 MainMenu.add(Settings)
+Help = types.InlineKeyboardButton('Помощь', callback_data='help')
+MainMenu.add(Help)
 
 #Alert
 Alert = types.InlineKeyboardMarkup()
@@ -22,6 +24,8 @@ addAlert = types.InlineKeyboardButton('Добавить новое уведом�
 Alert.add(addAlert)
 showAlerts = types.InlineKeyboardButton('Посмотреть текущие уведомления', callback_data='showAlerts')
 Alert.add(showAlerts)
+HelpAlert = types.InlineKeyboardButton('Помощь', callback_data='helpAlert')
+Alert.add(HelpAlert)
 Alert.add(BackToMenu)
 
 def AddAlert(user_id):
@@ -30,7 +34,7 @@ def AddAlert(user_id):
     allCurrencies = Crypto.GetSelectedCurrencies(Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0], SelectedCurrency)
 
     for Currency in allCurrencies:
-            AddAlert.add(types.InlineKeyboardButton(f'{Currency}', switch_inline_query_current_chat=f'{Currency} больше 1 2 minutes'))
+            AddAlert.add(types.InlineKeyboardButton(f'{Currency}', switch_inline_query_current_chat=f'{Currency} больше 1 за последние 2 minutes'))
 
     AddAlert.add(BackToAlert)
 
@@ -52,9 +56,9 @@ def ShowAlert(user_id):
 
 #Settings
 Settings = types.InlineKeyboardMarkup()
-ownCurrency = types.InlineKeyboardButton('Выбрать свою валюту', callback_data='ownCurrency')
+ownCurrency = types.InlineKeyboardButton('Родная валюта', callback_data='ownCurrency')
 Settings.add(ownCurrency)
-SelectCurrency = types.InlineKeyboardButton('Выбрать используемые валюты', callback_data='SelectCurrency')
+SelectCurrency = types.InlineKeyboardButton('Фильтр криптовалют', callback_data='SelectCurrency')
 Settings.add(SelectCurrency)
 Settings.add(BackToMenu)
 
@@ -65,7 +69,7 @@ def LoadOrCreateDictSelectedCurrencies(user_id):
         openCurrencies = Data.loadArray(f"{user_id}-{Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0]}")
     except:
         for Currency in allCurrencies:
-            openCurrencies[Currency] = False
+            openCurrencies[Currency] = True
         Data.saveArray(f"{user_id}-{Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0]}", openCurrencies)
     finally:
         return openCurrencies
@@ -81,6 +85,9 @@ def ShowSelectedCurrency(user_id):
             AllSelectedCurrenciesKeyboard.add(types.InlineKeyboardButton(f'{Currency} ✅', callback_data=f'{Currency}'))
         else:
             AllSelectedCurrenciesKeyboard.add(types.InlineKeyboardButton(f'{Currency}', callback_data=f'{Currency}'))
+
+    AllSelectedCurrenciesKeyboard.add(types.InlineKeyboardButton('Отметить все', callback_data='reset true'))
+    AllSelectedCurrenciesKeyboard.add(types.InlineKeyboardButton('Сбросить', callback_data='reset false'))
 
     AllSelectedCurrenciesKeyboard.add(BackToSettings)
 
