@@ -94,7 +94,7 @@ async def createAlert(message):
 
             alert = Crypto.Sending(bot, message.from_user.id, Currency, sign, float(value), time,
                                    Data.GetFromBase(message.from_user.id, Data.Character.OwnCurrency.value)[0])
-            if not alert.text in Data.Alerts:
+            if not alert.text_id in Data.Alerts:
                 Data.Alerts[alert.text_id] = alert
                 await bot.send_message(message.from_user.id, f'Уведомление {alert.text} запущено',
                                        reply_markup=types.InlineKeyboardMarkup().add(kb.BackToAlert).add(kb.BackToMenu))
