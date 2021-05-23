@@ -64,6 +64,8 @@ async def Commands(callback_query: types.CallbackQuery):
         del Data.Alerts[data]
         await bot.send_message(callback_query.from_user.id, 'Нажмите чтобы удалить',
                                reply_markup=kb.ShowAlert(callback_query.from_user.id))
+    else:
+        await bot.send_message(callback_query.from_user.id, 'Проверь, всё ли ты настроил!')
 
 
 @dp.message_handler(commands=['start'])
