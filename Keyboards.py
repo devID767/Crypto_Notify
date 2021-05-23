@@ -42,7 +42,7 @@ def ShowAlert(user_id):
     AlertsKeyboard = types.InlineKeyboardMarkup()
     for alert in Data.Alerts.values():
         if alert.user_id == user_id:
-            AlertsKeyboard.add(types.InlineKeyboardButton(alert.text, callback_data= alert.text))
+            AlertsKeyboard.add(types.InlineKeyboardButton(alert.text, callback_data= alert.text_id))
 
     AlertsKeyboard.add(BackToAlert)
 
@@ -92,9 +92,6 @@ def OwnCurrencies(currency, user_id):
     OwnCurrenciesKeyboard = types.InlineKeyboardMarkup()
 
     Currency = Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0]
-    #try:
-    #except:
-    #    Currency = '///'
 
     if currency == 'USD' or Currency == 'USD':
         Currency_USD = types.InlineKeyboardButton('USD ✅', callback_data='USD')

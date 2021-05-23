@@ -67,10 +67,6 @@ async def Commands(callback_query: types.CallbackQuery):
     else:
         await bot.send_message(callback_query.from_user.id, 'Проверь, всё ли ты настроил!')
 
-#@dp.message_handler(commands=['start'])
-#async def send_welcome(message):
-#    Data.InsertToBase(message.from_user.id, 'USD')
-
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message):
@@ -99,7 +95,7 @@ async def createAlert(message):
             alert = Crypto.Sending(bot, message.from_user.id, Currency, sign, float(value), time,
                                    Data.GetFromBase(message.from_user.id, Data.Character.OwnCurrency.value)[0])
             if not alert.text in Data.Alerts:
-                Data.Alerts[alert.text] = alert
+                Data.Alerts[alert.text_id] = alert
                 await bot.send_message(message.from_user.id, f'Уведомление {alert.text} запущено',
                                        reply_markup=types.InlineKeyboardMarkup().add(kb.BackToAlert).add(kb.BackToMenu))
                 await alert.Start()

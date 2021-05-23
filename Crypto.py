@@ -66,6 +66,7 @@ class Sending:
         self._task = None
 
         self.text = f'{self.crypto} {self._sign} {self._value}'
+        self.text_id = f'{user_id}-{self.crypto} {self._sign} {self._value}'
 
     async def Start(self):
         if not self.is_started:
