@@ -4,7 +4,7 @@ import Crypto
 import Data
 import Keyboards as kb
 
-bot = Bot('1800748726:AAHNvCm9LkYA2caEmSmn8olsyWFSbJ_oEMg')
+bot = Bot('1556889010:AAFzDxEeQPa1NDB6lWoPlBJFkGJeoW6tXF8')
 dp = Dispatcher(bot)
 
 @dp.callback_query_handler(lambda c: c.data)
@@ -73,7 +73,7 @@ async def send_welcome(message):
 
 @dp.message_handler()
 async def createAlert(message):
-    if message.text.split()[0] == '@crypto_alert_helperbot':
+    if message.text.split()[0] == '@Crypto_Notify_Alert_bot':
         try:
             Currency = message.text.split()[1]
             sign = message.text.split()[2]
