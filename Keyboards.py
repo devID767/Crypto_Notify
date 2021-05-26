@@ -28,7 +28,7 @@ HelpAlert = types.InlineKeyboardButton('Помощь', callback_data='helpAlert'
 Alert.add(HelpAlert)
 Alert.add(BackToMenu)
 
-def AddAlert(user_id, OpenedCurrency):
+def AddAlert(OpenedCurrency):
     AddAlert = types.InlineKeyboardMarkup()
 
     for Currency in OpenedCurrency:
@@ -60,7 +60,7 @@ SelectCurrency = types.InlineKeyboardButton('Фильтр криптовалют
 Settings.add(SelectCurrency)
 Settings.add(BackToMenu)
 
-def ShowSelectedCurrency(user_id, AllCurrencies, OpenedCurrencies):
+def ShowSelectedCurrency(AllCurrencies, OpenedCurrencies):
     AllSelectedCurrenciesKeyboard = types.InlineKeyboardMarkup()
 
     for Currency in AllCurrencies:
@@ -78,7 +78,7 @@ def ShowSelectedCurrency(user_id, AllCurrencies, OpenedCurrencies):
 
     return AllSelectedCurrenciesKeyboard
 
-def OwnCurrencies(currency, user_id):
+def OwnCurrencies(currency):
     OwnCurrenciesKeyboard = types.InlineKeyboardMarkup()
 
     if currency == 'USD':

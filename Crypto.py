@@ -11,7 +11,7 @@ def connectToSite():
 
 soup = connectToSite()
 
-def _GetCurrencies(OwnCurrency):
+async def _GetCurrencies(OwnCurrency):
     CurrenciesList = []
     if OwnCurrency == 'USD':
         Currencies = soup.find_all('li', class_=f'market quote-{OwnCurrency.lower()}')
@@ -28,15 +28,13 @@ def _GetCurrencies(OwnCurrency):
 
     return CurrenciesList
 
-def GetCurrencies(OwnCurrency, SelectedCurrencies=None, price=False):
-    #if SelectedCurrencies is None:
-    #    SelectedCurrencies = {'None': False}
+async def GetCurrencies(OwnCurrency, SelectedCurrencies=None, price=False):
     if price:
         global soup
         soup = connectToSite()
 
     selectedCurrenties = {}
-    Currencieslist = _GetCurrencies(OwnCurrency)
+    Currencieslist = await _GetCurrencies(OwnCurrency)
     for Currencies in Currencieslist:
         for currency in Currencies:
             if not SelectedCurrencies is None:
@@ -82,7 +80,7 @@ class Sending:
 
     async def _Sending(self):
         while True:
-            Currencies = GetCurrencies(self.ownCurrency, price=True)
+            Currencies = await GetCurrencies(self.ownCurrency, price=True)
             self.price = Currencies[self.crypto]
 
             if self._sign == 'больше' and self.price >= self._value:
