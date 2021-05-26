@@ -9,8 +9,9 @@ def connectToSite():
     soup = BeautifulSoup(response.text, 'lxml')
     return soup
 
-def GetCurrencies(OwnCurrency):
-    soup = connectToSite()
+soup = connectToSite()
+
+def _GetCurrencies(OwnCurrency):
     CurrenciesList = []
     if OwnCurrency == 'USD':
         Currencies = soup.find_all('li', class_=f'market quote-{OwnCurrency.lower()}')
@@ -27,30 +28,29 @@ def GetCurrencies(OwnCurrency):
 
     return CurrenciesList
 
-def GetSelectedCurrencies(OwnCurrency, SelectedCurrencies):
+def GetCurrencies(OwnCurrency, SelectedCurrencies=None, price=False):
+    #if SelectedCurrencies is None:
+    #    SelectedCurrencies = {'None': False}
+    if price:
+        global soup
+        soup = connectToSite()
+
     selectedCurrenties = {}
-    Currencieslist = GetCurrencies(OwnCurrency)
+    Currencieslist = _GetCurrencies(OwnCurrency)
     for Currencies in Currencieslist:
         for currency in Currencies:
-            if SelectedCurrencies[f"{currency.find('li').text}"]:
-               price = currency.find('ul', class_='last price')
-               selectedCurrenties[currency.find("li").text] = float(price.text)
+            if not SelectedCurrencies is None:
+                if SelectedCurrencies[f"{currency.find('li').text}"]:
+                    price = currency.find('ul', class_='last price')
+                    selectedCurrenties[currency.find("li").text] = float(price.text)
+            else:
+                price = currency.find('ul', class_='last price')
+                selectedCurrenties[currency.find("li").text] = float(price.text)
 
     return selectedCurrenties
 
-def GetAllCurrencies(OwnCurrency):
-    allCurrencies = {}
-    Currencieslist = GetCurrencies(OwnCurrency)
-
-    for Currencies in Currencieslist:
-        for currency in Currencies:
-            price = currency.find('ul', class_='last price')
-            allCurrencies[currency.find("li").text] = float(price.text)
-
-    return allCurrencies
-
 class Sending:
-    price = 0
+    price = 1
     oldprice = 1
     def __init__(self, bot, user_id, crypto, sign, value, time, ownCurrency):
         self._bot = bot
@@ -82,8 +82,8 @@ class Sending:
 
     async def _Sending(self):
         while True:
-            CurrenciesDict = GetAllCurrencies(self.ownCurrency)
-            self.price = CurrenciesDict[self.crypto]
+            Currencies = GetCurrencies(self.ownCurrency, price=True)
+            self.price = Currencies[self.crypto]
 
             if self._sign == 'больше' and self.price >= self._value:
                 await self._bot.send_message(self.user_id, self.text)

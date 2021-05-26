@@ -1,6 +1,4 @@
 from aiogram import types
-import Data
-import Crypto
 
 #Back to ...
 BackToMenu = types.InlineKeyboardButton('Перейти в меню', callback_data='menu')
@@ -24,17 +22,17 @@ addAlert = types.InlineKeyboardButton('Добавить новое уведом�
 Alert.add(addAlert)
 showAlerts = types.InlineKeyboardButton('Посмотреть текущие уведомления', callback_data='showAlerts')
 Alert.add(showAlerts)
+deleteAlerts = types.InlineKeyboardButton('Удалить все свои уведомления', callback_data='deleteAlerts')
+Alert.add(deleteAlerts)
 HelpAlert = types.InlineKeyboardButton('Помощь', callback_data='helpAlert')
 Alert.add(HelpAlert)
 Alert.add(BackToMenu)
 
-def AddAlert(user_id):
+def AddAlert(user_id, OpenedCurrency):
     AddAlert = types.InlineKeyboardMarkup()
-    SelectedCurrency = LoadOrCreateDictSelectedCurrencies(user_id)
-    allCurrencies = Crypto.GetSelectedCurrencies(Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0], SelectedCurrency)
 
-    for Currency in allCurrencies:
-            AddAlert.add(types.InlineKeyboardButton(f'{Currency}', switch_inline_query_current_chat=f'{Currency} больше 1 за последние 2 minutes'))
+    for Currency in OpenedCurrency:
+            AddAlert.add(types.InlineKeyboardButton(f'{Currency}', switch_inline_query_current_chat=f'{Currency} больше 1'))
 
     AddAlert.add(BackToAlert)
 
@@ -42,9 +40,9 @@ def AddAlert(user_id):
 
     return AddAlert
 
-def ShowAlert(user_id):
+def ShowAlerts(user_id, Alerts):
     AlertsKeyboard = types.InlineKeyboardMarkup()
-    for alert in Data.Alerts.values():
+    for alert in Alerts:
         if alert.user_id == user_id:
             AlertsKeyboard.add(types.InlineKeyboardButton(alert.text, callback_data= alert.text_id))
 
@@ -62,26 +60,11 @@ SelectCurrency = types.InlineKeyboardButton('Фильтр криптовалют
 Settings.add(SelectCurrency)
 Settings.add(BackToMenu)
 
-def LoadOrCreateDictSelectedCurrencies(user_id):
-    allCurrencies = Crypto.GetAllCurrencies(Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0])
-    openCurrencies = {}
-    try:
-        openCurrencies = Data.loadArray(f"{user_id}-{Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0]}")
-    except:
-        for Currency in allCurrencies:
-            openCurrencies[Currency] = True
-        Data.saveArray(f"{user_id}-{Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0]}", openCurrencies)
-    finally:
-        return openCurrencies
-
-def ShowSelectedCurrency(user_id):
+def ShowSelectedCurrency(user_id, AllCurrencies, OpenedCurrencies):
     AllSelectedCurrenciesKeyboard = types.InlineKeyboardMarkup()
-    allCurrencies = Crypto.GetAllCurrencies(Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0])
 
-    openCurrencies = LoadOrCreateDictSelectedCurrencies(user_id)
-
-    for Currency in allCurrencies:
-        if openCurrencies[Currency]:
+    for Currency in AllCurrencies:
+        if OpenedCurrencies[Currency]:
             AllSelectedCurrenciesKeyboard.add(types.InlineKeyboardButton(f'{Currency} ✅', callback_data=f'{Currency}'))
         else:
             AllSelectedCurrenciesKeyboard.add(types.InlineKeyboardButton(f'{Currency}', callback_data=f'{Currency}'))
@@ -98,18 +81,16 @@ def ShowSelectedCurrency(user_id):
 def OwnCurrencies(currency, user_id):
     OwnCurrenciesKeyboard = types.InlineKeyboardMarkup()
 
-    Currency = Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)[0]
-
-    if currency == 'USD' or Currency == 'USD':
+    if currency == 'USD':
         Currency_USD = types.InlineKeyboardButton('USD ✅', callback_data='USD')
     else:
         Currency_USD = types.InlineKeyboardButton('USD', callback_data='USD')
-    if currency == 'UAH' or Currency == 'UAH':
+    if currency == 'UAH':
         Currency_UAH = types.InlineKeyboardButton('UAH ✅', callback_data='UAH')
     else:
         Currency_UAH = types.InlineKeyboardButton('UAH', callback_data='UAH')
 
-    if currency == 'RUB' or Currency == 'RUB':
+    if currency == 'RUB':
         Currency_RUB = types.InlineKeyboardButton('RUB ✅', callback_data='RUB')
     else:
         Currency_RUB = types.InlineKeyboardButton('RUB', callback_data='RUB')

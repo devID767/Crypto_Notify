@@ -7,6 +7,19 @@ import Keyboards as kb
 bot = Bot('1556889010:AAFzDxEeQPa1NDB6lWoPlBJFkGJeoW6tXF8')
 dp = Dispatcher(bot)
 
+
+def LoadOrCreateDictSelectedCurrencies(user_id):
+    allCurrencies = Crypto.GetCurrencies(Data.GetFromBase(user_id, Data.Character.OwnCurrency.value))
+    openCurrencies = {}
+    try:
+        openCurrencies = Data.loadArray(f"{user_id}-{Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)}")
+    except:
+        for Currency in allCurrencies:
+            openCurrencies[Currency] = True
+        Data.saveArray(f"{user_id}-{Data.GetFromBase(user_id, Data.Character.OwnCurrency.value)}", openCurrencies)
+    finally:
+        return openCurrencies
+
 @dp.callback_query_handler(lambda c: c.data)
 async def Commands(callback_query: types.CallbackQuery):
     data = callback_query.data
@@ -14,100 +27,129 @@ async def Commands(callback_query: types.CallbackQuery):
     await bot.delete_message(callback_query.from_user.id, callback_query.message.message_id)
 
     if data == 'menu':
-        await bot.send_message(callback_query.from_user.id, f'Привет {callback_query.from_user.first_name}\n'
-                                                            f'Вибери действие:', reply_markup=kb.MainMenu)
+        await bot.send_message(callback_query.from_user.id, f'Вибери действие:', reply_markup=kb.MainMenu)
+    elif data == 'show':
+        OwnCurrency = Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)
+        SelectedCurrencies = LoadOrCreateDictSelectedCurrencies(f"{callback_query.from_user.id}")
+
+        showSelectedCurrencies = Crypto.GetCurrencies(OwnCurrency, SelectedCurrencies, price=True)
+        for Currencies in showSelectedCurrencies:
+            await bot.send_message(callback_query.from_user.id, f'{Currencies} - {showSelectedCurrencies[Currencies]}')
+
+        await bot.send_message(callback_query.from_user.id, f'Вибери действие:', reply_markup=kb.MainMenu)
     elif data == 'settings':
         await bot.send_message(callback_query.from_user.id, 'Настройки', reply_markup=kb.Settings)
     elif data == 'help':
-        await bot.send_message(callback_query.from_user.id, 'Для комфортной работы со мной, перейди в настройки, чтобы выбрать '
-                                                            'родную валюту и валюты, за которыми желаешь следить.\n\n'
-                                                            'Основная моя задача заключается в том, чтобы уведомлять тебя, '
+        await bot.send_message(callback_query.from_user.id, 'Основная моя задача заключается в том, чтобы уведомлять тебя, '
                                                             'когда криптовалюта резко упадет или вырастет\n'
-                                                            'Для этого, тебе следует передти во вкладку "Уведомления"',
+                                                            'Для этого, тебе следует передти во вкладку "Уведомления"\n\n'
+                                                            'Для комфортного пользования '
+                                                            'в настройках можешь выбрать для себя родную валюту и задать фильтр '
+                                                            'валют, за которыми жедаешь следать.',
                                                             reply_markup=types.InlineKeyboardMarkup().add(kb.BackToSettings)
                                                             .add(kb.BackToAlert).add(kb.BackToMenu))
     elif data == 'ownCurrency' or data == 'USD' or data == 'UAH' or data == 'RUB':
         if data != 'ownCurrency':
-            Data.InsertToBase(callback_query.from_user.id, data)
+            Data.Update(callback_query.from_user.id, Data.Character.OwnCurrency.value, data)
+        Currency = Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)
         await bot.send_message(callback_query.from_user.id, 'Выбрать родную валюту',
-                               reply_markup=kb.OwnCurrencies(data, callback_query.from_user.id))
+                               reply_markup=kb.OwnCurrencies(Currency, callback_query.from_user.id))
     elif data == 'SelectCurrency':
-        await bot.send_message(callback_query.from_user.id, 'Выберите криптовалюту, за которой вы желаете следить',
-                               reply_markup=kb.ShowSelectedCurrency(callback_query.from_user.id))
-    elif data in Crypto.GetAllCurrencies(Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)[0]):
-        openCurrencies = Data.loadArray(f"{callback_query.from_user.id}-"
-                                        f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)[0]}")
+        AllCurrencies = Crypto.GetCurrencies(Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value))
+        OpenedCurrencies = LoadOrCreateDictSelectedCurrencies(callback_query.from_user.id)
 
-        if openCurrencies[data]:
-            openCurrencies[data] = False
+        await bot.send_message(callback_query.from_user.id, 'Выберите криптовалюту, за которой вы желаете следить',
+                               reply_markup=kb.ShowSelectedCurrency(callback_query.from_user.id, AllCurrencies, OpenedCurrencies))
+    elif data in Crypto.GetCurrencies(Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)):
+        AllCurrencies = Crypto.GetCurrencies(
+            Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value))
+        OpenedCurrencies = Data.loadArray(f"{callback_query.from_user.id}-"
+                                        f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)}")
+
+        if OpenedCurrencies[data]:
+            OpenedCurrencies[data] = False
         else:
-            openCurrencies[data] = True
+            OpenedCurrencies[data] = True
 
         Data.saveArray(f"{callback_query.from_user.id}-"
-                       f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)[0]}", openCurrencies)
+                       f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)}", OpenedCurrencies)
         await bot.send_message(callback_query.from_user.id, 'Выберите криптовалюту, за которой вы желаете следить',
-                               reply_markup=kb.ShowSelectedCurrency(callback_query.from_user.id))
+                               reply_markup=kb.ShowSelectedCurrency(callback_query.from_user.id, AllCurrencies, OpenedCurrencies))
     elif data.startswith('reset'):
         default = data.split()[1]
-        openCurrencies = Data.loadArray(f"{callback_query.from_user.id}-"
-                                        f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)[0]}")
 
-        for Currency in openCurrencies:
+        AllCurrencies = Crypto.GetCurrencies(
+            Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value))
+        OpenedCurrencies = Data.loadArray(f"{callback_query.from_user.id}-"
+                                        f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)}")
+
+        for Currency in OpenedCurrencies:
             if default == 'true':
-                openCurrencies[Currency] = True
+                OpenedCurrencies[Currency] = True
             else:
-                openCurrencies[Currency] = False
+                OpenedCurrencies[Currency] = False
 
         Data.saveArray(f"{callback_query.from_user.id}-"
-                       f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)[0]}",
-                       openCurrencies)
+                       f"{Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)}",
+                       OpenedCurrencies)
         await bot.send_message(callback_query.from_user.id, 'Выберите криптовалюту, за которой вы желаете следить',
-                               reply_markup=kb.ShowSelectedCurrency(callback_query.from_user.id))
-    elif data == 'show':
-        OwnCurrency = Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value)[0]
-        SelectedCurrencies = kb.LoadOrCreateDictSelectedCurrencies(f"{callback_query.from_user.id}")
-
-        showenSelectedCurrencies = Crypto.GetSelectedCurrencies(OwnCurrency, SelectedCurrencies)
-        for Currencies in showenSelectedCurrencies:
-            await bot.send_message(callback_query.from_user.id, f'{Currencies} - {showenSelectedCurrencies[Currencies]}')
-
-        await bot.send_message(callback_query.from_user.id, 'Вернуться в меню?',
-                               reply_markup=types.InlineKeyboardMarkup().add(kb.BackToMenu))
+                               reply_markup=kb.ShowSelectedCurrency(callback_query.from_user.id, AllCurrencies, OpenedCurrencies))
     elif data == 'alert':
         await bot.send_message(callback_query.from_user.id, 'Уведомления', reply_markup=kb.Alert)
     elif data == 'addAlert':
+        SelectedCurrency = LoadOrCreateDictSelectedCurrencies(callback_query.from_user.id)
+        OpenedCurrencies = Crypto.GetCurrencies(Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value),
+                                             SelectedCurrency)
         await bot.send_message(callback_query.from_user.id, 'Чтобы установить уведомление введите комманду:\n'
-        '@crypto_alert_helperbot [название криптовалюты] [больше/меньше/скачек] [значение] за последние [число] [minutes/hours/days]',
-                                                            reply_markup=kb.AddAlert(callback_query.from_user.id))
+        '@crypto_alert_helperbot [название криптовалюты] [больше/меньше/скачек] [значение]',
+                                                        reply_markup=kb.AddAlert(callback_query.from_user.id, OpenedCurrencies))
     elif data == 'showAlerts':
         await bot.send_message(callback_query.from_user.id, 'Уведомления\n'
                                                             'Нажмите чтобы удалить',
-                               reply_markup=kb.ShowAlert(callback_query.from_user.id))
+                               reply_markup=kb.ShowAlerts(callback_query.from_user.id, Data.Alerts.values()))
     elif data in Data.Alerts:
         await Data.Alerts[data].Stop()
         await bot.send_message(callback_query.from_user.id, f'Уведомление "{Data.Alerts[data].text}" удалено')
+
+        CountOfAlerts = Data.GetFromBase(callback_query.from_user.id, Data.Character.CountOfAlerts.value)
+        Data.Update(callback_query.from_user.id, Data.Character.CountOfAlerts.value, CountOfAlerts - 1)
+
         del Data.Alerts[data]
         await bot.send_message(callback_query.from_user.id, 'Нажмите чтобы удалить',
-                               reply_markup=kb.ShowAlert(callback_query.from_user.id))
+                               reply_markup=kb.ShowAlerts(callback_query.from_user.id, Data.Alerts.values()))
+    elif data == 'deleteAlerts':
+        Data.Update(callback_query.from_user.id, Data.Character.CountOfAlerts.value, 0)
+        for alert in Data.Alerts.values():
+            if alert.user_id == callback_query.from_user.id:
+                await Data.Alerts
+                await Data.Alerts[alert.text_id].Stop()
+                await bot.send_message(callback_query.from_user.id, f'Уведомление "{Data.Alerts[alert.text_id].text}" удалено')
+
+                del Data.Alerts[alert.text_id]
+        await bot.send_message(callback_query.from_user.id, f'Все уведомления удалены',
+                               reply_markup=types.InlineKeyboardMarkup().add(kb.BackToAlert).add(kb.BackToMenu))
     elif data == 'helpAlert':
         await bot.send_message(callback_query.from_user.id, '[Кликом по крипте автоматически напечатается пример коммнады]\n\n'
                                'Чтобы установить уведомление введите комманду:\n\n'
-        '@crypto_alert_helperbot [название криптовалюты] [больше/меньше/скачек] [значение] за последние [число] [minutes/hours/days]\n\n'
+        '@crypto_alert_helperbot [название криптовалюты] [больше/меньше/скачек] [значение]\n\n'
                                 '[название криптовалюты] - \nСама криптовалюта/родная валюта. \nПример: BTC/USD\n\n'
                                 '[больше/меньше/скачек] - \nбольше: крипта должна перевалить значение [пороговая цена] в большую сторону.\n'
                                                           'меньше: крипта должна перевалить значение [пороговая цена] в меньшую сторону.\n'
                                                           'скачек: при каждой проверке будет проверяться не упала, или не поднялась ли крипта на [пороговая цена] процентов\n\n'
                                 '[значение] - число, которое должно переступить условие [больше/меньше/скачек]. Процентцы поддерживает только скачек. '
-                                                            'При скачке проценты можна не писать\n\n'
-                                '[число] - пеориодичность одной проверки.\n\n'
-                                '[minutes/hours/days] - тип времени. Секунды не поддерживаются',
+                                                            'При скачке проценты можна не писать\n\n',
                                reply_markup=types.InlineKeyboardMarkup().add(kb.BackToAlert).add(kb.BackToMenu))
 
 
 @dp.message_handler(commands=['start'])
-async def send_welcome(message):
+async def registration(message):
+    Data.Register(message.from_user.id, 'USD', 0, Data.Status.Default.value)
     await bot.send_message(message.chat.id, f'Привет {message.from_user.first_name}\n'
-                                            f'Вибери действие:', reply_markup=kb.MainMenu)
+                                            'Пропиши комманду /menu, чтобы вызвать главное меню')
+
+@dp.message_handler(commands=['menu'])
+async def send_welcome(message):
+    await bot.send_message(message.chat.id, f'Вибери действие:', reply_markup=kb.MainMenu)
 
 @dp.message_handler()
 async def createAlert(message):
@@ -116,36 +158,28 @@ async def createAlert(message):
             Currency = message.text.split()[1]
             sign = message.text.split()[2]
             value = message.text.split()[3]
-            time = float(message.text.split()[6])
             if value[-1] == '%':
-                print('yes')
                 value = float(value.replace('%', ''))
             else:
                 value = float(value)
-            typeOfTime = message.text.split()[7]
 
-            if typeOfTime == 'minutes':
-                time *= 60
-            elif typeOfTime == 'hours':
-                time *= 360
-            elif typeOfTime == 'days':
-                time *= 360 * 24
-            else:
-                time = 'asd'
-
-            alert = Crypto.Sending(bot, message.from_user.id, Currency, sign, value, time,
-                                   Data.GetFromBase(message.from_user.id, Data.Character.OwnCurrency.value)[0])
-            if not alert.text_id in Data.Alerts:
+            alert = Crypto.Sending(bot, message.from_user.id, Currency, sign, value, 3600,
+                                   Data.GetFromBase(message.from_user.id, Data.Character.OwnCurrency.value))
+            CountOfAlerts = Data.GetFromBase(message.from_user.id, Data.Character.CountOfAlerts.value)
+            if CountOfAlerts >= 3:
+                await bot.send_message(message.from_user.id, f'Вы уже использовали максимальное количевстко уведомлений! (3)',
+                                       reply_markup=types.InlineKeyboardMarkup().add(kb.BackToAlert).add(kb.BackToMenu))
+            elif not alert.text_id in Data.Alerts:
                 Data.Alerts[alert.text_id] = alert
+                Data.Update(message.from_user.id, Data.Character.CountOfAlerts.value, CountOfAlerts+1)
                 await bot.send_message(message.from_user.id, f'Уведомление {alert.text} запущено',
                                        reply_markup=types.InlineKeyboardMarkup().add(kb.BackToAlert).add(kb.BackToMenu))
                 await alert.Start()
             else:
                 await bot.send_message(message.from_user.id, 'Такоe уведомление уже существует!',
-                                       reply_markup=kb.MainMenu)
+                                       reply_markup=types.InlineKeyboardMarkup().add(kb.BackToAlert).add(kb.BackToMenu))
         except:
             await bot.send_message(message.from_user.id, 'Ошибка.\nНекоректные данные')
-
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
