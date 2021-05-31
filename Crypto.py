@@ -65,10 +65,10 @@ class Sending:
         self.is_started = False
         self._task = None
 
-        if sign == "измениться на":
-            self.text = f'{self.crypto} {self._sign} {self._value} за последних {int(time/3600)} часов'
-        else:
+        if sign == "изменится на":
             self.text = f'{self.crypto} {self._sign} {self._value}% за последних {int(time/3600)} часов'
+        else:
+            self.text = f'{self.crypto} {self._sign} {self._value} за последних {int(time/3600)} часов'
 
         self.text_id = f'{user_id} {self.crypto} {self._sign} {self._value} {self._time}'
     async def Start(self):

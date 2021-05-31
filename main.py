@@ -116,6 +116,26 @@ async def CreateAlert(bot, user_id, currency, sign, value, time):
 
     await bot.send_message(user_id, '*Уведомления*', parse_mode='Markdown', reply_markup=kb.Alert)
 
+@dp.message_handler(lambda c: c.text.startswith('/alert'))
+async def createAlert(message):
+    try:
+        Currency = message.text.split()[1]
+        if Currency not in await Crypto.GetCurrencies(Data.GetFromBase(message.from_user.id, Data.Character.OwnCurrency.value)):
+            raise ValueError
+        sign = message.text.split()[2].lower()
+        print(sign)
+        if sign != 'больше' and sign != 'меньше':
+            raise ValueError
+        value = message.text.split()[3]
+        if value[-1] == '%':
+            value = float(value.replace('%', ''))
+        else:
+            value = float(value)
+        await CreateAlert(bot, message.from_user.id, Currency, sign, value, 3600)
+    except ValueError:
+        await bot.send_message(message.from_user.id, 'Ошибка.\nНекоректные значения\n\n'
+                                                     'Пример: /alert BTC/USD больше 40000')
+
 @dp.callback_query_handler(lambda c: c.data.startswith('alert'))
 async def RegisteryAlert(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
@@ -138,7 +158,6 @@ async def RegisteryAlert(callback_query: types.CallbackQuery):
 
         await CreateAlert(bot, callback_query.from_user.id, Currency, 'изменится на', Jump, Time)
     elif code == 'add':
-        #await AddAlert(callback_query.from_user.id)
         SelectedCurrency = await LoadOrCreateDictSelectedCurrencies(callback_query.from_user.id)
         OpenedCurrencies = await Crypto.GetCurrencies(Data.GetFromBase(callback_query.from_user.id, Data.Character.OwnCurrency.value),
                                                       SelectedCurrency)
@@ -173,9 +192,8 @@ async def RegisteryAlert(callback_query: types.CallbackQuery):
         await bot.send_message(callback_query.from_user.id, f'Все уведомления удалены')
         await bot.send_message(callback_query.from_user.id, '*Уведомления*', parse_mode='Markdown', reply_markup=kb.Alert)
     elif code == 'help':
-        await bot.send_message(callback_query.from_user.id, '[Кликом по крипте автоматически напечатается пример коммнады]\n\n'
-                               'Чтобы установить уведомление введите комманду:\n\n'
-        '@crypto_alert_helperbot [название криптовалюты] [больше/меньше/скачек] [значение]\n\n'
+        await bot.send_message(callback_query.from_user.id, 'Чтобы установить расширенное уведомление введите комманду:\n\n'
+                                '/alert [название криптовалюты] [больше/меньше] [значение]\n\n'
                                 '[название криптовалюты] - \nСама криптовалюта/родная валюта. \nПример: BTC/USD\n\n'
                                 '[больше/меньше/скачек] - \nбольше: крипта должна перевалить значение [пороговая цена] в большую сторону.\n'
                                                           'меньше: крипта должна перевалить значение [пороговая цена] в меньшую сторону.\n'
@@ -262,22 +280,6 @@ async def Commands(callback_query: types.CallbackQuery):
 @dp.message_handler(commands=['menu'])
 async def send_welcome(message):
     await bot.send_message(message.chat.id, f'*Вибери действие:*', parse_mode='Markdown', reply_markup=kb.MainMenu)
-
-@dp.message_handler(lambda c: c.text.startswith('@Crypto_Notify_Alert_bot'))
-async def createAlert(message):
-    #if message.text.split()[0] == '@Crypto_Notify_Alert_bot':
-        try:
-            Currency = message.text.split()[1]
-            sign = message.text.split()[2]
-            value = message.text.split()[3]
-            if value[-1] == '%':
-                value = float(value.replace('%', ''))
-            else:
-                value = float(value)
-
-            await CreateAlert(bot, message.from_user.id, Currency, sign, value, 3600)
-        except:
-            await bot.send_message(message.from_user.id, 'Ошибка.\nНекоректные данные')
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
