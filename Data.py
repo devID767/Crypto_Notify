@@ -1,10 +1,10 @@
 import sqlite3
 import json
 
-Alerts = {}
-
 conn = sqlite3.connect("settings.db")
 cursor = conn.cursor()
+
+Alerts = {}
 
 from enum import Enum
 class Character(Enum):
@@ -14,7 +14,8 @@ class Character(Enum):
     all = "*"
 
 class Status(Enum):
-    Default = "Defalut"
+    NotRegistered = "NotRegistered"
+    Default = "Default"
     VIP = "VIP"
 
 def post_sql_query(sql_query):
@@ -64,8 +65,10 @@ def GetFromBase(user_id, Character):
 
 def saveArray(filename, dict):
     with open(filename, 'w') as f:
-        json.dump(dict, f, indent=2)
+        json.dump(dict, f)
 
 def loadArray(filename):
     with open(filename, 'r') as f:
         return json.load(f)
+
+
