@@ -83,10 +83,10 @@ class Sending:
             self._task.cancel()
 
     async def _Sending(self):
+        Currencies = await GetCurrencies(self.ownCurrency, price=True)
+        self.price = Currencies[self.crypto]
+        self.oldprice = self.price
         while True:
-            Currencies = await GetCurrencies(self.ownCurrency, price=True)
-            self.price = Currencies[self.crypto]
-
             if self._sign == 'больше' and self.price >= self._value:
                 await self._bot.send_message(self.user_id, self.text)
             elif self._sign == 'меньше' and self.price <= self._value:
@@ -94,9 +94,12 @@ class Sending:
             elif self._sign == 'изменится на':
                 if (self.price - self.oldprice)*100/self.oldprice >= self._value:
                     await self._bot.send_message(self.user_id, f'{self.crypto} поднялась на {round((self.price - self.oldprice)*100/self.oldprice, 2)}% до {self.price}')
-                elif (self.price - self.oldprice)*100/self.oldprice <= -self._value:
+                elif (self.price - self.oldprice)*100/self.oldprice <= -1 * self._value:
                     await self._bot.send_message(self.user_id, f'{self.crypto} упала на {abs(round((self.price - self.oldprice)*100/self.oldprice, 2))}% до {self.price}')
 
             self.oldprice = self.price
 
             await asyncio.sleep(self._time)
+
+            Currencies = await GetCurrencies(self.ownCurrency, price=True)
+            self.price = Currencies[self.crypto]
