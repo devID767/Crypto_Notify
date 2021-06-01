@@ -95,10 +95,10 @@ class Sending:
             elif self._sign == 'меньше' and self.price <= self._value:
                 await self._bot.send_message(self.user_id, self.text)
             elif self._sign == 'изменится на':
-                if self.price - (self.price * self._value/100) / self.oldprice >= self.oldprice:
-                    await self._bot.send_message(self.user_id, f'{self.crypto} поднялась на {(self.price - self.oldprice)*100/self.oldprice}% до {self.price}')
-                elif self.price + (self.price * self._value/100) / self.oldprice <= self.oldprice:
-                    await self._bot.send_message(self.user_id, f'{self.crypto} упала на {(self.price - self.oldprice)*100/self.oldprice}% до {self.price}')
+                if (self.price - self.oldprice)*100/self.oldprice >= self._value:
+                    await self._bot.send_message(self.user_id, f'{self.crypto} поднялась на {round((self.price - self.oldprice)*100/self.oldprice, 2)}% до {self.price}')
+                elif abs((self.price - self.oldprice)*100/self.oldprice) <= self._value:
+                    await self._bot.send_message(self.user_id, f'{self.crypto} упала на {round((self.price - self.oldprice)*100/self.oldprice, 2)}% до {self.price}')
 
             self.oldprice = self.price
 

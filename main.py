@@ -123,7 +123,6 @@ async def createAlert(message):
         if Currency not in await Crypto.GetCurrencies(Data.GetFromBase(message.from_user.id, Data.Character.OwnCurrency.value)):
             raise ValueError
         sign = message.text.split()[2].lower()
-        print(sign)
         if sign != 'больше' and sign != 'меньше':
             raise ValueError
         value = message.text.split()[3]
