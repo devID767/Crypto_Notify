@@ -4,7 +4,7 @@ import Crypto
 import Data
 import Keyboards as kb
 
-bot = Bot('1556889010:AAFzDxEeQPa1NDB6lWoPlBJFkGJeoW6tXF8')
+bot = Bot('**')
 dp = Dispatcher(bot)
 
 async def LoadOrCreateDictSelectedCurrencies(user_id):
